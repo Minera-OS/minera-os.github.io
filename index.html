@@ -106,6 +106,27 @@ footer{padding:40px 22px calc(40px + env(safe-area-inset-bottom,0px));text-align
 .steps li:hover{transform:translateY(-6px);background:var(--glass2)}
 .steps h3{font-size:24px;margin-bottom:8px}.steps p{color:var(--mute);font-size:16px}
 @media (max-width:860px){.steps{grid-template-columns:1fr}}
+.search{margin-top:36px;display:flex;align-items:center;gap:12px;padding:6px 20px;border-radius:999px;max-width:560px;color:var(--mute);transition:box-shadow .4s,transform .4s}
+.search:focus-within{box-shadow:0 0 0 2px var(--a1),0 20px 50px -20px var(--a1);transform:translateY(-2px)}
+.search input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--ink);font:500 16px 'Figtree',sans-serif;padding:12px 0}
+.search input::placeholder{color:var(--mute)}
+#count{font-size:13px;white-space:nowrap}
+.devs{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.dev{border-radius:26px;overflow:hidden;transition:transform .5s cubic-bezier(.2,.9,.2,1),box-shadow .4s;animation:pop .6s cubic-bezier(.2,.9,.2,1) both;animation-delay:calc(var(--i,0)*.06s)}
+@keyframes pop{from{opacity:0;transform:translateY(26px) scale(.96)}}
+.dev:hover{transform:translateY(-8px);box-shadow:0 30px 60px -24px var(--a1),inset 0 1px 0 rgba(255,255,255,.25)}
+.dev .pic{height:200px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.4);position:relative;overflow:hidden}
+.dev .pic::before{content:"";position:absolute;width:160px;height:160px;border-radius:50%;background:var(--a3);filter:blur(60px);opacity:.25;transition:opacity .5s}
+.dev:hover .pic::before{opacity:.5}
+.mock{position:relative;width:84px;height:172px;border-radius:18px;border:3px solid #2e3036;background:linear-gradient(160deg,#0b5f86,#22c2a2 55%,#d3ec74);box-shadow:0 0 0 1px rgba(255,255,255,.2),0 20px 30px -10px rgba(0,0,0,.6);transition:transform .6s cubic-bezier(.2,.9,.2,1)}
+.mock::after{content:"";position:absolute;top:7px;right:10px;width:7px;height:7px;border-radius:50%;background:#000}
+.mock::before{content:"";position:absolute;inset:0;border-radius:14px;background:linear-gradient(115deg,rgba(255,255,255,.35),transparent 45%)}
+.dev:hover .mock{transform:translateY(-6px) rotate(-4deg) scale(1.05)}
+.dev .info{padding:22px 24px 24px}
+.dev h3{font-size:22px;letter-spacing:-.02em;margin-bottom:10px}
+.dev .code{font:600 15px 'Figtree',sans-serif;color:var(--a3);margin-bottom:14px}
+.dev .by{display:flex;align-items:center;gap:9px;color:var(--mute);font-size:15px}
+.none{margin-top:30px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -114,6 +135,7 @@ footer{padding:40px 22px calc(40px + env(safe-area-inset-bottom,0px));text-align
 <nav class="glass">
   <div class="logo"><span class="gem"></span>MineraOS</div>
   <a href="#features">Features</a>
+  <a href="#devices">Devices</a>
   <a href="#apps">Apps</a>
   <a class="btn pri" href="#install">Get MineraOS</a>
 </nav>
@@ -151,6 +173,17 @@ footer{padding:40px 22px calc(40px + env(safe-area-inset-bottom,0px));text-align
     </div>
   </section>
 
+  <section id="devices">
+    <h2>Supported devices</h2>
+    <div class="search glass">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search by name, codename or maintainer" aria-label="Search supported devices" autocomplete="off">
+      <span id="count" aria-live="polite"></span>
+    </div>
+    <div class="devs" id="devs"></div>
+    <p class="none" id="none" hidden>No devices match your search.</p>
+  </section>
+
   <section id="get">
     <div class="final glass">
       <h2>Ready to try MineraOS?</h2>
@@ -181,6 +214,23 @@ footer{padding:40px 22px calc(40px + env(safe-area-inset-bottom,0px));text-align
   var h=document.getElementById('h1'),words=h.textContent.split(' ');
   h.setAttribute('aria-label',h.textContent);h.innerHTML='';
   words.forEach(function(w,i){var s=document.createElement('span');s.setAttribute('aria-hidden','true');s.style.setProperty('--i',i);s.textContent=w;h.appendChild(s);if(i<words.length-1)h.appendChild(document.createTextNode(' '))});
+  var DEVICES=[
+    {name:'Samsung Galaxy S20 5G',codename:'x1s',maintainer:'YourUsername'}
+  ];
+  var devs=document.getElementById('devs'),q=document.getElementById('q'),cnt=document.getElementById('count'),none=document.getElementById('none');
+  var userSvg='<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-3.6 3.1-6 7.5-6s7.5 2.4 7.5 6z"/><path d="M18 9v6m-3-3h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>';
+  function renderDevices(){
+    var s=q.value.trim().toLowerCase(),n=0;devs.innerHTML='';
+    DEVICES.forEach(function(d){
+      if(s&&(d.name+' '+d.codename+' '+d.maintainer).toLowerCase().indexOf(s)<0)return;
+      var c=document.createElement('article');c.className='dev glass';c.style.setProperty('--i',n++);
+      c.innerHTML='<div class="pic"><div class="mock"></div></div><div class="info"><h3></h3><div class="code"></div><div class="by">'+userSvg+'<span></span></div></div>';
+      c.querySelector('h3').textContent=d.name;c.querySelector('.code').textContent=d.codename;c.querySelector('.by span').textContent=d.maintainer;
+      devs.appendChild(c);
+    });
+    none.hidden=n>0;cnt.textContent=n+(n===1?' device':' devices');
+  }
+  q.addEventListener('input',renderDevices);renderDevices();
   var phone=document.getElementById('phone'),hint=document.getElementById('hint');
   phone.addEventListener('click',function(){
     var open=phone.classList.toggle('open');
